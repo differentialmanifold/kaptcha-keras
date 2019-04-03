@@ -1,0 +1,10 @@
+*.pyc
+*.out
+*.err
+*.pickle
+__pycache__
+*~
+.idea/*
+experiments/*
+*/summaries_*/*
+*.DS_Store
