@@ -1,7 +1,9 @@
 import numpy as np
+import requests
 from scipy import misc
 from keras import backend as K
 from keras.models import load_model
+from flask import json
 
 
 class PredictAbstract:
@@ -48,5 +50,20 @@ class PredictNative(PredictAbstract):
         x_test_scaled = self.data_proprocess(image_path_list)
 
         y_pred = model.predict(x_test_scaled[:])
+
+        return y_pred
+
+
+class PredictTensorflowServing(PredictAbstract):
+    def predict_from_image(self, image_path_list):
+        flask_query_path = "http://flask_ip:5000/image_pred"
+        payload = {
+            "image_path_list": image_path_list
+        }
+        resp = requests.post(flask_query_path, json=payload)
+
+        resp = json.loads(resp.content.decode('utf-8'))
+
+        y_pred = resp['y_pred']['predictions']
 
         return y_pred

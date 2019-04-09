@@ -1,8 +1,5 @@
 from __future__ import print_function
 import argparse
-from keras import backend as K
-from keras.models import load_model
-from scipy import misc
 from utils import *
 from predict_utils import predict_from_image
 
@@ -28,6 +25,8 @@ for i in range(N_DATA):
 predict_from_image_class = predict_from_image.PredictNative()
 
 y_pred = predict_from_image_class.predict_from_image(image_path_list)
+
+y_pred = np.asarray(y_pred)
 
 f = open(data_dir + '/pass.txt')
 labelY = f.read().split(' ')[:N_DATA]
