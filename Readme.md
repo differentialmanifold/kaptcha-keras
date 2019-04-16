@@ -10,9 +10,9 @@ nohup sudo docker run --rm -v $PWD:/tmp -w /tmp openjdk:8 java -jar example-1.0-
 
 ## Preprocess data
 
-my-tensorflow is a docker image build from tensorflow/tensorflow:1.13.1-py3 with keras, scipy, Pillow, requests.
+my-tensorflow is a docker image build from tensorflow/tensorflow:1.13.1-py3 with requests, flask, flask-cors.
 
-Read data from kaptcha_generator/data, save preprocessed data to model folder.
+Read data from kaptcha_generator/data, save preprocessed data to model folder in tfrecord format.
 
 ```bash
 nohup sudo docker run --rm -v $PWD/src:/tmp/src -v $PWD/model:/tmp/model -v ~/Developer/Java/kaptcha/data:/tmp/data  -w /tmp my-tensorflow python -u src/Preprocessing.py 100000 > Preprocessing.out 2>&1 &
@@ -20,12 +20,12 @@ nohup sudo docker run --rm -v $PWD/src:/tmp/src -v $PWD/model:/tmp/model -v ~/De
 
 ## Train
 
-Read preprocessed data from model folder, and save model.hdf5 to model folder.
+Read preprocessed data from model folder, and save tensorflow model to model folder.
 
-Arguments is the epochs to train.
+Arguments is the epochs to train and rfrecord data number.
 
 ```bash
-nohup sudo docker run --rm -v $PWD/src:/tmp/src -v $PWD/model:/tmp/model  -v ~/tensorboard:/tmp/tensorboard -w /tmp my-tensorflow python -u src/Train.py 1000 > train.out 2>&1 &
+nohup sudo docker run --rm -v $PWD/src:/tmp/src -v $PWD/model:/tmp/model  -v ~/tensorboard:/tmp/tensorboard -v ~/tensorflow-serving/models:/tmp/tensorflow_serving -w /tmp my-tensorflow python -u src/Train.py 1000 100000 > train.out 2>&1 &
 ```
 
 ## Recognition
@@ -33,7 +33,7 @@ nohup sudo docker run --rm -v $PWD/src:/tmp/src -v $PWD/model:/tmp/model  -v ~/t
 Generate test data to kaptcha_generator/testdata, and predict from trained model.
 
 ```bash
-nohup sudo docker run --rm -v $PWD/src:/tmp/src -v $PWD/model:/tmp/model  -v ~/Developer/Java/kaptcha/testdata:/tmp/testdata -w /tmp my-tensorflow python -u src/Recognition.py 100 > recognition.out 2>&1 &
+nohup sudo docker run --rm -v $PWD/src:/tmp/src -v ~/tensorflow-serving/models:/tmp/tensorflow_serving  -v ~/Developer/Java/kaptcha/testdata:/tmp/testdata -w /tmp my-tensorflow python -u src/Recognition.py 100 > recognition.out 2>&1 &
 ```
 
 ### Recognition from api
@@ -60,7 +60,3 @@ you can get tensorflow model using post request `/transfer_model`.
 ```bash
 curl -H "Content-Type: application/json" -d '{"image_path_list": ["/tmp/testdata/0.jpg","/tmp/testdata/1.jpg"]}' -X POST http://localhost:5000/image_pred_h
 ```
-
-## Comment
-
-The project is based on `https://github.com/dukn/Captcha-recognition-Keras`.

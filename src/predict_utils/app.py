@@ -1,9 +1,10 @@
 import numpy as np
 import tensorflow as tf
 import requests
-from scipy import misc
 from flask import Flask, json, request, Response
 from flask_cors import CORS
+
+tf.enable_eager_execution()
 
 app = Flask(__name__)
 CORS(app)
@@ -19,23 +20,27 @@ ALPHABET = 'abcde2345678gfynmnpwx'
 list_char = [c for c in ALPHABET]
 
 
+def data_item_proprocess(image_path):
+    image = tf.io.read_file(image_path)
+    image = tf.image.decode_jpeg(image, channels=3)
+    image = tf.reshape(image, [img_rows, img_cols, 3])
+    image = tf.cast(image, tf.float32)
+    image /= 255.0
+    return image.numpy()
+
+
 def data_proprocess(image_path_list):
     N_DATA = len(image_path_list)
     dataX = []
 
     for i in range(N_DATA):
-        path = image_path_list[i]
-        img = misc.imread(path).astype(np.float)  # load image
-        grayim = np.dot(img[..., :3], [0.299, 0.587, 0.114])  # gray scale
-        dataX.append(grayim)
+        image_path = image_path_list[i]
+        image_arr = data_item_proprocess(image_path)
+        dataX.append(image_arr)
 
     x_test = np.asarray(dataX)
 
-    x_test_ = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
-
-    x_test_scaled = x_test_ / 255.
-
-    return x_test_scaled
+    return x_test
 
 
 def transfer_image(image_path_list):

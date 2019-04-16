@@ -20,7 +20,7 @@ N_DATA = data_num
 image_path_list = []
 
 for i in range(N_DATA):
-    image_path_list.append(data_dir + "/%d.jpg" % (i))
+    image_path_list.append(data_dir + "/%d.jpg" % i)
 
 predict_from_image_class = predict_from_image.PredictNative()
 
